@@ -19,9 +19,14 @@ module.exports = {
 		.addStringOption(option =>
 			option.setName('type')
 				.setDescription('The type of the offer (sale or auction)')
+				.setRequired(true))
+		.addAttachmentOption(option =>
+			option.setName('file')
+				.setDescription('select a file')
 				.setRequired(true)),
 	async execute(interaction) {
 		// Retrieve each option from the interaction
+		const file = interaction.options.getAttachment('file');
 		const title = interaction.options.getString('title');
 		const price = interaction.options.getString('price');
 		const category = interaction.options.getString('category');
@@ -29,7 +34,10 @@ module.exports = {
 
 		// Implement logic to handle the offer creation using the provided details
 
-		// Respond to the interaction
-		await interaction.reply(`Offer created: ${title}, Price: ${price}, Category: ${category}, Type: ${type}`);
+		// You might want to use the file URL or some property in your response or internal logic
+		// Respond to the interaction with acknowledgment of the file and other details
+		await interaction.reply({
+			content: `File Attached: ${file ? file.url : 'No file attached'}, Offer created: ${title}, Price: ${price}, Category: ${category}, Type: ${type}`,
+		});
 	},
 };
