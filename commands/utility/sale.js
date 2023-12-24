@@ -1,5 +1,9 @@
 const { SlashCommandBuilder } = require('discord.js');
 
+const { EmbedBuilder } = require('discord.js');
+
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName('offer')
@@ -32,12 +36,32 @@ module.exports = {
 		const category = interaction.options.getString('category');
 		const type = interaction.options.getString('type');
 
-		// Implement logic to handle the offer creation using the provided details
+		// Create an embed with fields for each piece of data
+		const offerEmbed = new EmbedBuilder()
+			.setColor(0x0099FF)
+			.setTitle('New Offer Created')
+			.addFields(
+				{ name: 'Title', value: title },
+				{ name: 'Price', value: price },
+				{ name: 'Category', value: category },
+				{ name: 'Type', value: type },
+			)
+			.setTimestamp();
 
-		// You might want to use the file URL or some property in your response or internal logic
-		// Respond to the interaction with acknowledgment of the file and other details
-		await interaction.reply({
-			content: `File Attached: ${file ? file.url : 'No file attached'}, Offer created: ${title}, Price: ${price}, Category: ${category}, Type: ${type}`,
-		});
+		const contactButton = new ButtonBuilder()
+			.setCustomId('contactSeller')
+			.setLabel('Contact Seller')
+			.setStyle(ButtonStyle.Primary);
+
+		// Add the button to a row
+		const row = new ActionRowBuilder().addComponents(contactButton);
+
+		// If there's a file, add it as an image or attachment
+		if (file) {
+			offerEmbed.setImage(file.url);
+		}
+
+		// Respond to the interaction with the embed
+		await interaction.reply({ embeds: [offerEmbed], components: [row] });
 	},
 };
