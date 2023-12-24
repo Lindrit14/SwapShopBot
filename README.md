@@ -10,8 +10,11 @@ SwapShopBot is a Discord bot designed to facilitate item trading, allowing users
 
 ## Getting Started
 
-npm i 
-node index.js
+- npm i 
+- node .\deploy-commands.js
+- node index.js
+
+For adding commands work in the commands directory
 
 
 
