@@ -1,8 +1,15 @@
 const { SlashCommandBuilder } = require('discord.js');
+// const { Collection, Events, GatewayIntentBits } = require('discord.js');
+
+// const { insertOffer, getOffer, endOffer, generateUniqueOfferId } = require('./db/database');
+// const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
 
 const { EmbedBuilder } = require('discord.js');
 
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+
+// const offerId = generateUniqueOfferId();
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -30,6 +37,7 @@ module.exports = {
 				.setRequired(true)),
 	async execute(interaction) {
 		// Retrieve each option from the interaction
+
 		const file = interaction.options.getAttachment('file');
 		const title = interaction.options.getString('title');
 		const price = interaction.options.getString('price');
@@ -54,8 +62,14 @@ module.exports = {
 			.setStyle(ButtonStyle.Primary);
 
 		// Add the button to a row
-		const row = new ActionRowBuilder().addComponents(contactButton);
 
+
+		const endOfferButton = new ButtonBuilder()
+			.setCustomId('endOffer')
+			.setLabel('End Offer')
+			.setStyle(ButtonStyle.Danger);
+
+		const row = new ActionRowBuilder().addComponents(contactButton, endOfferButton);
 		// If there's a file, add it as an image or attachment
 		if (file) {
 			offerEmbed.setImage(file.url);
@@ -64,4 +78,6 @@ module.exports = {
 		// Respond to the interaction with the embed
 		await interaction.reply({ embeds: [offerEmbed], components: [row] });
 	},
+
+
 };

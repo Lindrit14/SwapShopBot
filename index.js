@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const dotenv = require('dotenv');
+// const { initializeDb } = require('./db/database.js');
 const token = process.env.DISCORD_TOKEN;
 
 dotenv.config();
@@ -61,6 +62,7 @@ client.on(Events.InteractionCreate, async interaction => {
 // It makes some properties non-nullable.
 client.once(Events.ClientReady, readyClient => {
 	console.log(`Ready! Logged in as ${readyClient.user.tag}`);
+	// initializeDb();
 });
 
 // Log in to Discord with your client's token
