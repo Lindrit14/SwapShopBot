@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, ComponentType } = require("discord.js");
+const { SlashCommandBuilder } = require("discord.js");
 
 const { EmbedBuilder } = require("discord.js");
 
@@ -6,57 +6,66 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("offer")
-    .setDescription("Creates a new offer.")
+    .setName("auction")
+    .setDescription("Creates a new auction.")
     .addStringOption((option) =>
       option
         .setName("title")
-        .setDescription("The title of the offer")
+        .setDescription("The title of the auction")
         .setRequired(true)
     )
     .addStringOption((option) =>
       option
         .setName("price")
-        .setDescription("The price of the offer")
+        .setDescription("Starting Price of the offer")
         .setRequired(true)
     )
     .addStringOption((option) =>
       option
         .setName("category")
-        .setDescription("The category of the offer")
+        .setDescription("The category of the auction")
         .setRequired(true)
     )
     .addStringOption((option) =>
       option
-        .setName("type")
-        .setDescription("The type of the offer (sale or auction)")
+        .setName("time")
+        .setDescription("Time the offer is going to last in hours")
         .setRequired(true)
     )
     .addAttachmentOption((option) =>
       option.setName("file").setDescription("select a file").setRequired(true)
+    )
+    .addStringOption((option) =>
+      option
+        .setName("bid")
+        .setDescription("Minimal Price increase for each bid")
+        .setRequired(false)
     ),
   async execute(interaction) {
     // Retrieve each option from the interaction
-
-    const idOffer = Date.now();
     const file = interaction.options.getAttachment("file");
     const title = interaction.options.getString("title");
     const price = interaction.options.getString("price");
+    const biddingPrice = interaction.options.getString("bid")
+      ? interaction.options.getString("bid")
+      : 1; //Default value = 1;
+    const time = interaction.options.getString("time");
     const category = interaction.options.getString("category");
-    const type = interaction.options.getString("type");
     const username = interaction.user.username;
+    const idOffer = Date.now();
     const status = "Pending";
 
     // Create an embed with fields for each piece of data
     const offerEmbed = new EmbedBuilder()
       .setColor(0x0099ff)
-      .setTitle("New Offer Created")
+      .setTitle("New Auction Created")
       .addFields(
         { name: "ID", value: `${idOffer}` },
         { name: "Title", value: title },
-        { name: "Price", value: price },
+        { name: "Starting Price", value: price },
         { name: "Category", value: category },
-        { name: "Type", value: type },
+        { name: "Bidding Price", value: `${biddingPrice} €` },
+        { name: "Remaining Time", value: time },
         { name: "By User", value: username },
         { name: "Status", value: status }
       )
@@ -67,16 +76,14 @@ module.exports = {
       .setLabel("Contact Seller")
       .setStyle(ButtonStyle.Primary);
 
-    const endOfferButton = new ButtonBuilder()
-      .setCustomId("endOffer")
-      .setLabel("End Offer")
+    const endOffer = new ButtonBuilder()
+      .setCustomId("endAuction")
+      .setLabel("End Auction")
       .setStyle(ButtonStyle.Danger);
 
     // Add the button to a row
-    const row = new ActionRowBuilder().addComponents(
-      contactButton,
-      endOfferButton
-    );
+    const row = new ActionRowBuilder().addComponents(contactButton);
+    row.addComponents(endOffer);
 
     // If there's a file, add it as an image or attachment
     if (file) {
@@ -101,9 +108,11 @@ module.exports = {
         return;
       }
 
-      if (interaction.customId === "endOffer") {
+      if (interaction.customId === "endAuction") {
         if (interaction.user.username != username) {
-          interaction.reply("Only the user that created the offer can end it!");
+          interaction.reply(
+            "Only the user that created the auction can end it!"
+          );
           return;
         }
 
@@ -113,11 +122,12 @@ module.exports = {
           .addFields(
             { name: "ID", value: `${idOffer}` },
             { name: "Title", value: title },
-            { name: "Price", value: price },
+            { name: "Starting Price", value: price },
             { name: "Category", value: category },
-            { name: "Type", value: type },
+            { name: "Bidding Price", value: `${biddingPrice} €` },
+            { name: "Remaining Time", value: time },
             { name: "By User", value: username },
-            { name: "Status", value: "Complete" }
+            { name: "Status", value: status }
           )
           .setTimestamp();
 
@@ -128,8 +138,8 @@ module.exports = {
           .setDisabled(true);
 
         const newEndOfferButton = new ButtonBuilder()
-          .setCustomId("endOffer")
-          .setLabel("End Offer")
+          .setCustomId("endAuction")
+          .setLabel("End Auction")
           .setStyle(ButtonStyle.Danger)
           .setDisabled(true);
 
@@ -143,7 +153,7 @@ module.exports = {
           embeds: [editedOffer],
           components: [newRow],
         });
-        interaction.reply(`Offer with id ${idOffer} has ended`);
+        interaction.reply(`Auction with id ${idOffer} has ended`);
       }
     });
   },
