@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, ComponentType } = require("discord.js");
 
 const { EmbedBuilder } = require("discord.js");
 
@@ -38,14 +38,14 @@ module.exports = {
     .addStringOption((option) =>
       option
         .setName("bid")
-        .setDescription("Minimal Price increase for each bid")
+        .setDescription("Price increase for each bid")
         .setRequired(false)
     ),
   async execute(interaction) {
     // Retrieve each option from the interaction
     const file = interaction.options.getAttachment("file");
     const title = interaction.options.getString("title");
-    const price = interaction.options.getString("price");
+    let price = interaction.options.getString("price");
     const biddingPrice = interaction.options.getString("bid")
       ? interaction.options.getString("bid")
       : 1; //Default value = 1;
@@ -54,6 +54,7 @@ module.exports = {
     const username = interaction.user.username;
     const idOffer = Date.now();
     const status = "Pending";
+    let highestBidder = "no bidder";
 
     // Create an embed with fields for each piece of data
     const offerEmbed = new EmbedBuilder()
@@ -81,9 +82,13 @@ module.exports = {
       .setLabel("End Auction")
       .setStyle(ButtonStyle.Danger);
 
+    const bidOffer = new ButtonBuilder()
+      .setCustomId("bidAuction")
+      .setLabel(`Bid +${biddingPrice}`)
+      .setStyle(ButtonStyle.Success);
+
     // Add the button to a row
-    const row = new ActionRowBuilder().addComponents(contactButton);
-    row.addComponents(endOffer);
+    const row = new ActionRowBuilder().addComponents(contactButton, endOffer, bidOffer);
 
     // If there's a file, add it as an image or attachment
     if (file) {
@@ -122,12 +127,13 @@ module.exports = {
           .addFields(
             { name: "ID", value: `${idOffer}` },
             { name: "Title", value: title },
-            { name: "Starting Price", value: price },
+            { name: "Current Bid", value: price },
+            { name: "Bidding User", value: highestBidder },
             { name: "Category", value: category },
             { name: "Bidding Price", value: `${biddingPrice} €` },
             { name: "Remaining Time", value: time },
             { name: "By User", value: username },
-            { name: "Status", value: status }
+            { name: "Status", value: "Complete" }
           )
           .setTimestamp();
 
@@ -149,12 +155,79 @@ module.exports = {
           newEndOfferButton
         );
 
+        if (file) {
+          editedOffer.setImage(file.url);
+        }
+
         reponse.edit({
           embeds: [editedOffer],
           components: [newRow],
         });
         interaction.reply(`Auction with id ${idOffer} has ended`);
       }
+
+      if (interaction.customId === "bidAuction") {
+        
+        interaction.user.send(
+          `You have successfully added your bid. If it was on accident conntact the seller on your behalf!`
+        );
+
+        let newPrice = Number(price) + Number(biddingPrice)
+        price = `${newPrice}`   
+
+        highestBidder = interaction.user.username;
+
+        const editedOffer = new EmbedBuilder()
+        .setColor(0x0099ff)
+        .setTitle("Offer with new bid")
+        .addFields(
+          { name: "ID", value: `${idOffer}` },
+          { name: "Title", value: title },
+          { name: "Current Bid", value: price },
+          { name: "Bidding User", value: highestBidder },
+          { name: "Category", value: category },
+          { name: "Bidding Price", value: `${biddingPrice} €` },
+          { name: "Remaining Time", value: time },
+          { name: "By User", value: username },
+          { name: "Status", value: status }
+        )
+        .setTimestamp();
+
+      const newContactButton = new ButtonBuilder()
+        .setCustomId("contactSeller")
+        .setLabel("Contact Seller")
+        .setStyle(ButtonStyle.Primary);
+
+      const newEndOfferButton = new ButtonBuilder()
+        .setCustomId("endAuction")
+        .setLabel("End Auction")
+        .setStyle(ButtonStyle.Danger);
+
+      const bidOffer = new ButtonBuilder()
+        .setCustomId("bidAuction")
+        .setLabel(`Bid +${biddingPrice}`)
+        .setStyle(ButtonStyle.Success);
+
+      // Add the button to a row
+      const newRow = new ActionRowBuilder().addComponents(
+        newContactButton,
+        newEndOfferButton,
+        bidOffer
+      );
+
+      if (file) {
+        editedOffer.setImage(file.url);
+      }
+
+      reponse.edit({
+        embeds: [editedOffer],
+        components: [newRow],
+      });
+
+
+      interaction.reply(`${interaction.user.username} has the highest bid with ${price} for Auction with id ${idOffer}`);
+      }
+
     });
   },
 };
