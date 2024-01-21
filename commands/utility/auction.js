@@ -67,7 +67,6 @@ module.exports = {
         { name: "Category", value: category },
         { name: "Bidding Price", value: `${biddingPrice} €` },
         { name: "Remaining Time", value: time },
-        { name: "By User", value: username },
         { name: "Status", value: status }
       )
       .setTimestamp();
@@ -132,7 +131,6 @@ module.exports = {
             { name: "Category", value: category },
             { name: "Bidding Price", value: `${biddingPrice} €` },
             { name: "Remaining Time", value: time },
-            { name: "By User", value: username },
             { name: "Status", value: "Complete" }
           )
           .setTimestamp();
@@ -188,7 +186,6 @@ module.exports = {
           { name: "Category", value: category },
           { name: "Bidding Price", value: `${biddingPrice} €` },
           { name: "Remaining Time", value: time },
-          { name: "By User", value: username },
           { name: "Status", value: status }
         )
         .setTimestamp();

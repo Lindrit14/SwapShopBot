@@ -7,24 +7,30 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("sale")
-    .setDescription("Creates a new sale.")
+    .setName("trade")
+    .setDescription("Creates a new Trade.")
     .addStringOption((option) =>
       option
         .setName("title")
-        .setDescription("The title of the sale")
+        .setDescription("The title of the trade")
         .setRequired(true)
     )
     .addStringOption((option) =>
       option
         .setName("price")
-        .setDescription("The price of the sale")
+        .setDescription("The price of the trade")
         .setRequired(true)
     )
     .addStringOption((option) =>
       option
         .setName("category")
-        .setDescription("The category of the sale")
+        .setDescription("The category of the trade")
+        .setRequired(true)
+    )
+    .addStringOption((option) =>
+      option
+        .setName("looking-for")
+        .setDescription("What should be traded for")
         .setRequired(true)
     )
     .addAttachmentOption((option) =>
@@ -38,6 +44,7 @@ module.exports = {
     const title = interaction.options.getString("title");
     const price = interaction.options.getString("price");
     const category = interaction.options.getString("category");
+    const looking = interaction.options.getString("looking-for");
     const username = interaction.user.username;
     const status = "Pending";
 
@@ -50,6 +57,7 @@ module.exports = {
         { name: "Title", value: title },
         { name: "Price", value: price },
         { name: "Category", value: category },
+        { name: "Looking-for", value: looking },
         { name: "Status", value: status }
       )
       .setTimestamp();
@@ -59,15 +67,15 @@ module.exports = {
       .setLabel("Contact Seller")
       .setStyle(ButtonStyle.Primary);
 
-    const endSaleButton = new ButtonBuilder()
-      .setCustomId("endSale")
-      .setLabel("End Sale")
+    const endTradeButton = new ButtonBuilder()
+      .setCustomId("endTrade")
+      .setLabel("End Trade")
       .setStyle(ButtonStyle.Danger);
 
     // Add the button to a row
     const row = new ActionRowBuilder().addComponents(
       contactButton,
-      endSaleButton
+      endTradeButton
     );
 
     // If there's a file, add it as an image or attachment
@@ -88,25 +96,26 @@ module.exports = {
     collector.on("collect", (interaction) => {
       if (interaction.customId === "contactSeller") {
         interaction.user.send(
-          `This sale was created by ${username}, send them a DM to learn more about the item!`
+          `This trade was created by ${username}, send them a DM to learn more about the item!`
         );
         return;
       }
 
-      if (interaction.customId === "endSale") {
+      if (interaction.customId === "endTrade") {
         if (interaction.user.username != username) {
-          interaction.reply("Only the user that created the sale can end it!");
+          interaction.reply("Only the user that created the trade can end it!");
           return;
         }
 
         const editedOffer = new EmbedBuilder()
           .setColor(0x0099ff)
-          .setTitle("Sale has ended")
+          .setTitle("Trade has ended")
           .addFields(
             { name: "ID", value: `${idOffer}` },
             { name: "Title", value: title },
             { name: "Price", value: price },
             { name: "Category", value: category },
+            { name: "Looking-for", value: looking },
             { name: "Status", value: "Complete" }
           )
           .setTimestamp();
@@ -117,23 +126,23 @@ module.exports = {
           .setStyle(ButtonStyle.Primary)
           .setDisabled(true);
 
-        const newEndSaleButton = new ButtonBuilder()
-          .setCustomId("endSale")
-          .setLabel("End Sale")
+        const newEndTradeButton = new ButtonBuilder()
+          .setCustomId("endTrade")
+          .setLabel("End Trade")
           .setStyle(ButtonStyle.Danger)
           .setDisabled(true);
 
         // Add the button to a row
         const newRow = new ActionRowBuilder().addComponents(
           newContactButton,
-          newEndSaleButton
+          newEndTradeButton
         );
 
         reponse.edit({
           embeds: [editedOffer],
           components: [newRow],
         });
-        interaction.reply(`Sale with id ${idOffer} has ended`);
+        interaction.reply(`Trade with id ${idOffer} has ended`);
       }
     });
   },
